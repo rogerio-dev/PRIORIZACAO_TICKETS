@@ -19,7 +19,6 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'favicon.ico'));
 });
 
-// Página HTML profissional
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -37,26 +36,34 @@ app.get('/', (req, res) => {
           background: #181c2a;
           font-family: 'Segoe UI', Arial, sans-serif;
           margin: 0;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .container {
+          width: 100%;
           max-width: 420px;
-          margin: 40px auto;
+          margin: 24px auto;
           background: #23263a;
           border-radius: 12px;
           box-shadow: 0 2px 12px #0005;
-          padding: 32px;
+          padding: 32px 24px;
+          box-sizing: border-box;
         }
         h1 {
           color: #0091ea;
           text-align: center;
           margin-bottom: 24px;
           letter-spacing: 1px;
+          font-size: 2rem;
         }
         label {
           font-weight: 500;
           margin-top: 12px;
           display: block;
           color: #fff;
+          font-size: 1rem;
         }
         input, textarea, select {
           width: 100%;
@@ -67,6 +74,7 @@ app.get('/', (req, res) => {
           font-size: 1rem;
           background: #181c2a;
           color: #fff;
+          box-sizing: border-box;
         }
         input::placeholder, textarea::placeholder {
           color: #b0b8c1;
@@ -81,6 +89,7 @@ app.get('/', (req, res) => {
           border-radius: 6px;
           padding: 12px;
           font-size: 1.1rem;
+          width: 100%;
         }
         button:hover {
           background: #005fa3;
@@ -90,8 +99,8 @@ app.get('/', (req, res) => {
         }
         .toast {
           position: fixed;
-          top: 32px;
-          right: 32px;
+          top: 16px;
+          right: 16px;
           background: #23263a;
           color: #fff;
           padding: 16px 28px;
@@ -108,8 +117,23 @@ app.get('/', (req, res) => {
           opacity: 1;
           transform: translateY(0);
         }
-        @media (max-width: 500px) {
-          .container { padding: 16px; }
+        @media (max-width: 700px) {
+          .container {
+            max-width: 98vw;
+            padding: 16px 8px;
+            margin: 8px;
+          }
+          h1 {
+            font-size: 1.3rem;
+          }
+        }
+        @media (max-width: 400px) {
+          .container {
+            padding: 8px 2px;
+          }
+          label, input, textarea, select, button {
+            font-size: 0.95rem;
+          }
         }
       </style>
     </head>
@@ -130,6 +154,9 @@ app.get('/', (req, res) => {
         </form>
         <div class="status">${req.query.status ? req.query.status : ''}</div>
       </div>
+      <footer style="width:100%;text-align:center;margin-top:16px;font-size:0.95rem;color:#b0b8c1;opacity:0.7;">
+        Desenvolvido por Rogerio Carvalho
+      </footer>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
       <script>
