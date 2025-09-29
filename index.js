@@ -123,8 +123,8 @@ app.get('/', (req, res) => {
           <textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva a prioridade..." required></textarea>
           <label for="grupo">Grupo do Chat</label>
           <select id="grupo" name="grupo" required>
-            <option value="Suporte Prime">Suporte Prime</option>
-            <option value="Suporte Todos">Suporte Todos</option>
+            <option value="Suporte Prime">Suporte Prime (exemplo)</option>
+            <option value="Suporte Todos">Suporte Todos (exemplo)</option>
           </select>
           <button type="submit">Enviar Prioridade</button>
         </form>
