@@ -142,7 +142,7 @@ app.get('/', (req, res) => {
         <h1>TOTVS Fluig Suporte<br>Priorização de Tickets</h1>
         <form method="POST" action="/send">
           <label for="ticket">Número do Ticket</label>
-          <input type="text" id="ticket" name="ticket" placeholder="Ex: 123456" required>
+          <input type="text" id="ticket" name="ticket" placeholder="número do ticket" required>
           <label for="mensagem">Mensagem de Priorização</label>
           <textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva a prioridade..." required></textarea>
           <label for="grupo">Grupo do Chat</label>
