@@ -154,7 +154,7 @@ app.get('/', (req, res) => {
         </form>
         <div class="status">${req.query.status ? req.query.status : ''}</div>
       </div>
-      <footer style="width:100%;text-align:center;margin-top:16px;font-size:0.95rem;color:#b0b8c1;opacity:0.7;">
+      <footer style="position:fixed;left:0;bottom:0;width:100%;text-align:center;padding:8px 0;font-size:0.95rem;color:#b0b8c1;opacity:0.7;background:#181c2a;z-index:100;">
         Desenvolvido por Rogerio Carvalho
       </footer>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
