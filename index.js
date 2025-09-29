@@ -5,16 +5,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Webhooks dos grupos de chat
+// Webhooks 
 const WEBHOOKS = {
   'Suporte Prime': 'https://chat.googleapis.com/v1/spaces/AAQAY2RwRPg/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=z_MMMg5AC4nHeoUFqnU8tLpTiY2p4gjitwZ_PdUxpf8',
   'Suporte Todos': 'https://chat.googleapis.com/v1/spaces/AAAABBBCCCD/messages?key=AIzaSyXXXXXXX&token=YYYYYYYYYYYYYYYYYYYYYYYYYYYY',
 };
 
-// Serve arquivos estáticos para PWA
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve favicon.ico
 app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'favicon.ico'));
 });
@@ -188,7 +186,7 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Recebe dados do formulário e envia ao grupo selecionado
+// Dispara mensagem para o Google Chat
 app.post('/send', async (req, res) => {
   const { ticket, mensagem, grupo } = req.body;
   const webhook = WEBHOOKS[grupo];
@@ -205,7 +203,7 @@ app.post('/send', async (req, res) => {
   }
 });
 
-// Mantém o endpoint antigo para testes
+// endpoint antigo de teste
 app.post('/webhook', async (req, res) => {
   console.log('Webhook recebido:', req.body);
   try {
