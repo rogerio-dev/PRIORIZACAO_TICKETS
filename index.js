@@ -199,8 +199,8 @@ app.post('/send', async (req, res) => {
       {
         header: {
           title: `Priorização de Ticket`,
-          subtitle: `TOTVS Fluig Suporte`,
-          imageUrl: "https://cdn-icons-png.flaticon.com/512/1828/1828640.png",
+          subtitle: "",
+          imageUrl: "https://cdn-icons-png.flaticon.com/512/564/564619.png", // ícone de alerta
           imageStyle: "AVATAR"
         },
         sections: [
