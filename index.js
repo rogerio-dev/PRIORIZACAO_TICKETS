@@ -193,9 +193,41 @@ app.post('/send', async (req, res) => {
   if (!webhook) {
     return res.redirect('/?status=Grupo+inválido.');
   }
-  const texto = `*Ticket:* ${ticket}\n*Prioridade:* ${mensagem}`;
+  const ticketUrl = `https://totvssuporte.zendesk.com/agent/tickets/${ticket}`;
+  const card = {
+    cards: [
+      {
+        header: {
+          title: `Priorização de Ticket`,
+          subtitle: `TOTVS Fluig Suporte`,
+          imageUrl: "https://cdn-icons-png.flaticon.com/512/1828/1828640.png",
+          imageStyle: "AVATAR"
+        },
+        sections: [
+          {
+            widgets: [
+              {
+                keyValue: {
+                  topLabel: "Ticket",
+                  content: `<a href='${ticketUrl}'>${ticket}</a>`,
+                  contentMultiline: false
+                }
+              },
+              {
+                keyValue: {
+                  topLabel: "Mensagem de Priorização",
+                  content: mensagem,
+                  contentMultiline: true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
   try {
-    await axios.post(webhook, { text: texto });
+    await axios.post(webhook, card);
     res.redirect('/?status=Mensagem+enviada+com+sucesso!');
   } catch (error) {
     console.error('Erro ao enviar para Google Chat:', error.message);
