@@ -158,10 +158,12 @@ app.get('/', (req, res) => {
           <textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva a prioridade..." required></textarea>
           <button type="submit">Enviar Prioridade</button>
         </form>
+        <div id="emailError" style="display:none;color:#ff5252;font-weight:500;margin-top:8px;text-align:center;"></div>
+        </form>
         <div class="status">${req.query.status ? req.query.status : ''}</div>
       </div>
       <footer style="position:fixed;left:0;bottom:0;width:100%;text-align:center;padding:8px 0;font-size:0.95rem;color:#b0b8c1;opacity:0.7;background:#181c2a;z-index:100;">
-        TOTVS Prime Fluig 
+        TOTVS Fluig 
       </footer>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -187,6 +189,22 @@ app.get('/', (req, res) => {
               window.history.replaceState({}, document.title, window.location.pathname);
             }, 4000);
           }
+
+          // Validação de email no frontend
+          const form = document.querySelector('form');
+          form.addEventListener('submit', function(e) {
+            const emailInput = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            if (!emailInput.value.trim().toLowerCase().endsWith('@totvs.com.br')) {
+              e.preventDefault();
+              emailError.textContent = 'Sem autorização, fale com o administrador do sistema.';
+              emailError.style.display = 'block';
+              emailInput.focus();
+              return false;
+            } else {
+              emailError.style.display = 'none';
+            }
+          });
         });
       </script>
     </body>
@@ -199,6 +217,10 @@ app.post('/send', async (req, res) => {
   const { tcode, nomeCliente, ticket, mensagem, email, telefone } = req.body;
   if (!tcode || !nomeCliente || !ticket || !mensagem || !email) {
     return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
+  }
+  // Validação de domínio do email
+  if (!email.trim().toLowerCase().endsWith('@totvs.com.br')) {
+    return res.redirect('/?status=Sem+autorização,+fale+com+o+administrador+do+sistema.');
   }
   // Verifica se o TCODE está na lista
   const grupo = TCODE_PRIME.some(tc => tcode.trim().toUpperCase().includes(tc)) ? 'Suporte Prime' : 'Suporte Todos';
