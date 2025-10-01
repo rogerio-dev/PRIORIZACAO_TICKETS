@@ -17,6 +17,11 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'favicon.ico'));
 });
 
+// Lista de TCODEs para Suporte Prime
+const TCODE_PRIME = [
+  "T49594","T03314","TFDBMT","TEZEMI","T07030","TFDSM4","DBK238","T77169","TEVVHG","T19815","TAALX9","T11036","TEZKO6","T76547","TEZFJU","T51580","T09032","T11933","T33436","T02800","T41773","T17941","TFDUKJ","T59698","T06697","TFBTU8","TEVVV2","TEZKQ5","T43410","TEZOB3","TFDITK","T31871","T09290","TEZIBV","TFBZVQ","115378","T10153","T22498","T23708","T52253","TAAFT3","T35094","T80848","TFCTB6","TFCGGY","T50732","TFCGRH","TFCGRD","T29213","T30612","TFCGRA","TFCGRG","T29296","TFBZDY","TFCNFT","T17401","TFCLQQ","T20359","T41463","TEZOQY","TFBRNV","TFCOVD","TEYJA5","T50585","TEYJ66","TEWTOM","TFCLEQ","TFCLER","T60366","T60370","TFBRNZ","TFBRNW","TEZFDT","TEYJ67","TEZGTZ","TFBRNU","T60365","T46391","T42222","TEZJIJ","TEZMXD","T58517","T50468","TEXPLS","TFCLES","TEZI68","TEVVTL","T42330","TFBRO1","T60372","TFCHYW","TEZFDU","TEXPND","TFBRO0","TFBTO7","TFCBVX","TEZH31","T41316","T29964","T39818","99061","T18851","T75069","T74511","TFDOQE","T10405","Temporários","TFCKYG","T06645","TFCRKT","TDCC0G","TFCUA3","TFDESF","TFAVF9","T03152","TFBNG2","TEVVV2","T59789","T17401","TFCLQQ.T20359","115378","TFECYR","T29964","T39818","99061","T18851","99034"
+];
+
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -63,7 +68,7 @@ app.get('/', (req, res) => {
           color: #fff;
           font-size: 1rem;
         }
-        input, textarea, select {
+        input, textarea {
           width: 100%;
           margin: 8px 0 16px 0;
           padding: 10px;
@@ -108,7 +113,7 @@ app.get('/', (req, res) => {
           font-weight: 500;
           z-index: 9999;
           opacity: 0;
-          transform: translateY(-20px);
+          transform: translateY(-20px;
           transition: opacity 0.4s, transform 0.4s;
         }
         .toast.show {
@@ -129,7 +134,7 @@ app.get('/', (req, res) => {
           .container {
             padding: 8px 2px;
           }
-          label, input, textarea, select, button {
+          label, input, textarea, button {
             font-size: 0.95rem;
           }
         }
@@ -139,15 +144,18 @@ app.get('/', (req, res) => {
       <div class="container">
         <h1>TOTVS Fluig Suporte<br>Priorização de Tickets</h1>
         <form method="POST" action="/send">
+          <label for="tcode">Código-T</label>
+          <input type="text" id="tcode" name="tcode" placeholder="Informe o Código-T" required>
+          <label for="nomeCliente">Nome do Cliente</label>
+          <input type="text" id="nomeCliente" name="nomeCliente" placeholder="Informe o nome do cliente" required>
+          <label for="email">E-mail <span style="font-size:0.95em;color:#b0b8c1;">(seu e-mail para contato)</span></label>
+          <input type="email" id="email" name="email" placeholder="Informe seu e-mail para contato" required>
+          <label for="telefone">Telefone <span style="font-size:0.95em;color:#b0b8c1;">(seu telefone para contato, opcional)</span></label>
+          <input type="text" id="telefone" name="telefone" placeholder="Informe seu telefone para contato (opcional)">
           <label for="ticket">Número do Ticket</label>
           <input type="text" id="ticket" name="ticket" placeholder="número do ticket" required>
           <label for="mensagem">Mensagem de Priorização</label>
           <textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva a prioridade..." required></textarea>
-          <label for="grupo">Grupo do Chat</label>
-          <select id="grupo" name="grupo" required>
-            <option value="Suporte Prime">Suporte Prime (exemplo)</option>
-            <option value="Suporte Todos">Suporte Todos (exemplo)</option>
-          </select>
           <button type="submit">Enviar Prioridade</button>
         </form>
         <div class="status">${req.query.status ? req.query.status : ''}</div>
@@ -188,24 +196,34 @@ app.get('/', (req, res) => {
 
 // Dispara mensagem para o Google Chat
 app.post('/send', async (req, res) => {
-  const { ticket, mensagem, grupo } = req.body;
-  const webhook = WEBHOOKS[grupo];
-  if (!webhook) {
-    return res.redirect('/?status=Grupo+inválido.');
+  const { tcode, nomeCliente, ticket, mensagem, email, telefone } = req.body;
+  if (!tcode || !nomeCliente || !ticket || !mensagem || !email) {
+    return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
   }
+  // Verifica se o TCODE está na lista
+  const grupo = TCODE_PRIME.some(tc => tcode.trim().toUpperCase().includes(tc)) ? 'Suporte Prime' : 'Suporte Todos';
+  const webhook = WEBHOOKS[grupo];
   const ticketUrl = `https://totvssuporte.zendesk.com/agent/tickets/${ticket}`;
+  const tcodeNome = `${tcode.trim()} - ${nomeCliente.trim()}`;
   const card = {
     cards: [
       {
         header: {
           title: `Priorização de Ticket`,
-          subtitle: "",
+          subtitle: `<font size=\"1\">${tcodeNome}</font>`,
           imageUrl: "https://cdn-icons-png.flaticon.com/512/564/564619.png", 
           imageStyle: "AVATAR"
         },
         sections: [
           {
             widgets: [
+              {
+                keyValue: {
+                  topLabel: "Código-T / Cliente",
+                  content: tcodeNome,
+                  contentMultiline: false
+                }
+              },
               {
                 keyValue: {
                   topLabel: "Ticket",
@@ -217,6 +235,13 @@ app.post('/send', async (req, res) => {
                 keyValue: {
                   topLabel: "Mensagem de Priorização",
                   content: mensagem,
+                  contentMultiline: true
+                }
+              },
+              {
+                keyValue: {
+                  topLabel: "Solicitante",
+                  content: `Email: ${email}${telefone ? ` | Telefone: ${telefone}` : ''}`,
                   contentMultiline: true
                 }
               }
