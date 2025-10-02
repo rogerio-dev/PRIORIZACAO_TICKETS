@@ -148,6 +148,24 @@ app.get('/', (req, res) => {
           <input type="text" id="tcode" name="tcode" placeholder="Ex: T12345" required>
           <label for="ticket">Ticket</label>
           <input type="text" id="ticket" name="ticket" placeholder="Ex: 123456" required>
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="Informe seu e-mail" required>
+          <span id="emailError" style="color:#ff5252;display:none;font-size:0.95rem;"></span>
+          <label style="margin-top:16px;display:block;">Deseja informar o telefone?</label>
+          <div style="display:flex;align-items:center;gap:18px;margin-bottom:8px;">
+            <label style="display:flex;align-items:center;gap:6px;margin:0;">
+              <input type="radio" id="telefone_nao" name="telefone_opcao" value="nao" checked style="accent-color:#0091ea;">
+              Não
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;margin:0;">
+              <input type="radio" id="telefone_sim" name="telefone_opcao" value="sim" style="accent-color:#0091ea;">
+              Sim
+            </label>
+          </div>
+          <div id="telefoneDiv" style="display:none;">
+            <label for="telefone">Telefone (opcional)</label>
+            <input type="text" id="telefone" name="telefone" placeholder="Informe seu telefone">
+          </div>
           <label for="mensagem">Mensagem</label>
           <textarea id="mensagem" name="mensagem" rows="4" placeholder="Digite a mensagem..." required></textarea>
           <button type="submit">Enviar</button>
@@ -182,6 +200,17 @@ app.get('/', (req, res) => {
             }, 4000);
           }
 
+          // Mostrar/esconder campo telefone
+          const telefoneSim = document.getElementById('telefone_sim');
+          const telefoneNao = document.getElementById('telefone_nao');
+          const telefoneDiv = document.getElementById('telefoneDiv');
+          telefoneSim.addEventListener('change', function() {
+            if (telefoneSim.checked) telefoneDiv.style.display = 'block';
+          });
+          telefoneNao.addEventListener('change', function() {
+            if (telefoneNao.checked) telefoneDiv.style.display = 'none';
+          });
+
           // Validação de email no frontend
           const form = document.querySelector('form');
           form.addEventListener('submit', function(e) {
@@ -189,7 +218,7 @@ app.get('/', (req, res) => {
             const emailError = document.getElementById('emailError');
             if (!emailInput.value.trim().toLowerCase().endsWith('@totvs.com.br')) {
               e.preventDefault();
-              emailError.textContent = 'Sem autorização, fale com o administrador do sistema.';
+              emailError.textContent = 'Você não tem autorização para solicitação de prioridade.';
               emailError.style.display = 'block';
               emailInput.focus();
               return false;
@@ -206,9 +235,13 @@ app.get('/', (req, res) => {
 
 // Dispara mensagem para o Google Chat
 app.post('/send', async (req, res) => {
-  const { tcode, ticket, mensagem } = req.body;
-  if (!tcode || !ticket || !mensagem) {
+  const { tcode, ticket, mensagem, email, telefone } = req.body;
+  if (!tcode || !ticket || !mensagem || !email) {
     return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
+  }
+  // Validação simples de email
+  if (!email.trim().toLowerCase().endsWith('@totvs.com.br')) {
+    return res.redirect('/?status=E-mail+não+autorizado,+fale+com+o+administrador.');
   }
   const grupo = TCODE_PRIME.some(tc => tcode.trim().toUpperCase().includes(tc)) ? 'Suporte Prime' : 'Suporte Todos';
   const webhook = WEBHOOKS[grupo];
@@ -235,6 +268,13 @@ app.post('/send', async (req, res) => {
                 keyValue: {
                   topLabel: "Mensagem",
                   content: mensagem,
+                  contentMultiline: true
+                }
+              },
+              {
+                keyValue: {
+                  topLabel: "Solicitante",
+                  content: `Email: ${email}${telefone ? ` | Telefone: ${telefone}` : ''}`,
                   contentMultiline: true
                 }
               }
