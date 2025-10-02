@@ -142,10 +142,9 @@ app.get('/', (req, res) => {
         <form method="POST" action="/send">
           <label for="suporte">Tipo de Suporte</label>
           <select id="suporte" name="suporte" required style="width:100%;margin-bottom:16px;padding:10px;border-radius:6px;border:1px solid #444;background:#181c2a;color:#fff;font-size:1rem;">
-            <option value="Padrão" selected>Padrão</option>
-            <option value="Prime">Prime</option>
+            <option value="Suporte Todos" selected>Padrão</option>
+            <option value="Suporte Prime">Prime</option>
           </select>
-          <!-- Código T removido -->
           <label for="ticket">Ticket</label>
           <input type="text" id="ticket" name="ticket" placeholder="Ex: 123456" required>
           <label for="email">E-mail</label>
@@ -239,55 +238,62 @@ app.get('/', (req, res) => {
 
 // Dispara mensagem para o Google Chat
 app.post('/send', async (req, res) => {
-  const { suporte, ticket, mensagem, email, telefone } = req.body;
-  if (!suporte || !ticket || !mensagem || !email) {
-    return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
-  }
-  // Validação simples de email
-  if (!email.trim().toLowerCase().endsWith('@totvs.com.br')) {
-    return res.redirect('/?status=E-mail+não+autorizado,+fale+com+o+administrador.');
-  }
-  const webhook = WEBHOOKS[suporte];
-  const ticketUrl = `https://totvssuporte.zendesk.com/agent/tickets/${ticket}`;
-  const card = {
-    cards: [
-      {
-        header: {
-          title: `Priorização de Ticket`,
-          imageUrl: "https://cdn-icons-png.flaticon.com/512/564/564619.png", 
-          imageStyle: "AVATAR"
-        },
-        sections: [
-          {
-            widgets: [
-              {
-                keyValue: {
-                  topLabel: "Ticket",
-                  content: `<a href='${ticketUrl}'>${ticket}</a>`,
-                  contentMultiline: false
-                }
-              },
-              {
-                keyValue: {
-                  topLabel: "Mensagem",
-                  content: mensagem,
-                  contentMultiline: true
-                }
-              },
-              {
-                keyValue: {
-                  topLabel: "Solicitante",
-                  content: `Email: ${email}${telefone ? ` | Telefone: ${telefone}` : ''}`,
-                  contentMultiline: true
-                }
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  };
   try {
+    const { suporte, ticket, mensagem, email, telefone } = req.body;
+    // Validação dos campos obrigatórios
+    if (!suporte || !ticket || !mensagem || !email) {
+      return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
+    }
+    // Validação do e-mail
+    if (!email.trim().toLowerCase().endsWith('@totvs.com.br')) {
+      return res.redirect('/?status=E-mail+não+autorizado,+fale+com+o+administrador.');
+    }
+    // Validação do tipo de suporte
+    const webhook = WEBHOOKS[suporte];
+    if (!webhook) {
+      return res.redirect('/?status=Tipo+de+suporte+inválido.');
+    }
+    // Monta o card para o Google Chat
+    const ticketUrl = `https://totvssuporte.zendesk.com/agent/tickets/${ticket}`;
+    const card = {
+      cards: [
+        {
+          header: {
+            title: `Priorização de Ticket`,
+            imageUrl: "https://cdn-icons-png.flaticon.com/512/564/564619.png", 
+            imageStyle: "AVATAR"
+          },
+          sections: [
+            {
+              widgets: [
+                {
+                  keyValue: {
+                    topLabel: "Ticket",
+                    content: `<a href='${ticketUrl}'>${ticket}</a>`,
+                    contentMultiline: false
+                  }
+                },
+                {
+                  keyValue: {
+                    topLabel: "Mensagem",
+                    content: mensagem,
+                    contentMultiline: true
+                  }
+                },
+                {
+                  keyValue: {
+                    topLabel: "Solicitante",
+                    content: `Email: ${email}${telefone ? ` | Telefone: ${telefone}` : ''}`,
+                    contentMultiline: true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    // Envia para o Google Chat
     await axios.post(webhook, card);
     res.redirect('/?status=Mensagem+enviada+com+sucesso!');
   } catch (error) {
