@@ -144,21 +144,13 @@ app.get('/', (req, res) => {
       <div class="container">
         <h1>TOTVS Fluig Suporte<br>Priorização de Tickets</h1>
         <form method="POST" action="/send">
-          <label for="tcode">Código-T</label>
-          <input type="text" id="tcode" name="tcode" placeholder="Informe o Código-T" required>
-          <label for="nomeCliente">Nome do Cliente</label>
-          <input type="text" id="nomeCliente" name="nomeCliente" placeholder="Informe o nome do cliente" required>
-          <label for="email">E-mail <span style="font-size:0.95em;color:#b0b8c1;">(seu e-mail para contato)</span></label>
-          <input type="email" id="email" name="email" placeholder="Informe seu e-mail para contato" required>
-          <label for="telefone">Telefone <span style="font-size:0.95em;color:#b0b8c1;">(seu telefone para contato, opcional)</span></label>
-          <input type="text" id="telefone" name="telefone" placeholder="Informe seu telefone para contato (opcional)">
-          <label for="ticket">Número do Ticket</label>
-          <input type="text" id="ticket" name="ticket" placeholder="número do ticket" required>
-          <label for="mensagem">Mensagem de Priorização</label>
-          <textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva a prioridade..." required></textarea>
-          <button type="submit">Enviar Prioridade</button>
-        </form>
-        <div id="emailError" style="display:none;color:#ff5252;font-weight:500;margin-top:8px;text-align:center;"></div>
+          <label for="tcode">Código T</label>
+          <input type="text" id="tcode" name="tcode" placeholder="Ex: T12345" required>
+          <label for="ticket">Ticket</label>
+          <input type="text" id="ticket" name="ticket" placeholder="Ex: 123456" required>
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" name="mensagem" rows="4" placeholder="Digite a mensagem..." required></textarea>
+          <button type="submit">Enviar</button>
         </form>
         <div class="status">${req.query.status ? req.query.status : ''}</div>
       </div>
@@ -214,38 +206,24 @@ app.get('/', (req, res) => {
 
 // Dispara mensagem para o Google Chat
 app.post('/send', async (req, res) => {
-  const { tcode, nomeCliente, ticket, mensagem, email, telefone } = req.body;
-  if (!tcode || !nomeCliente || !ticket || !mensagem || !email) {
+  const { tcode, ticket, mensagem } = req.body;
+  if (!tcode || !ticket || !mensagem) {
     return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
   }
-  // Validação de domínio do email
-  if (!email.trim().toLowerCase().endsWith('@totvs.com.br')) {
-    return res.redirect('/?status=Sem+autorização,+fale+com+o+administrador+do+sistema.');
-  }
-  // Verifica se o TCODE está na lista
   const grupo = TCODE_PRIME.some(tc => tcode.trim().toUpperCase().includes(tc)) ? 'Suporte Prime' : 'Suporte Todos';
   const webhook = WEBHOOKS[grupo];
   const ticketUrl = `https://totvssuporte.zendesk.com/agent/tickets/${ticket}`;
-  const tcodeNome = `${tcode.trim()} - ${nomeCliente.trim()}`;
   const card = {
     cards: [
       {
         header: {
           title: `Priorização de Ticket`,
-          subtitle: `<font size=\"1\">${tcodeNome}</font>`,
           imageUrl: "https://cdn-icons-png.flaticon.com/512/564/564619.png", 
           imageStyle: "AVATAR"
         },
         sections: [
           {
             widgets: [
-              {
-                keyValue: {
-                  topLabel: "Código-T / Cliente",
-                  content: tcodeNome,
-                  contentMultiline: false
-                }
-              },
               {
                 keyValue: {
                   topLabel: "Ticket",
@@ -255,15 +233,8 @@ app.post('/send', async (req, res) => {
               },
               {
                 keyValue: {
-                  topLabel: "Mensagem de Priorização",
+                  topLabel: "Mensagem",
                   content: mensagem,
-                  contentMultiline: true
-                }
-              },
-              {
-                keyValue: {
-                  topLabel: "Solicitante",
-                  content: `Email: ${email}${telefone ? ` | Telefone: ${telefone}` : ''}`,
                   contentMultiline: true
                 }
               }
