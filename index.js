@@ -17,10 +17,6 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'favicon.ico'));
 });
 
-// Lista de TCODEs para Suporte Prime
-const TCODE_PRIME = [
-  "T49594","T03314","TFDBMT","TEZEMI","T07030","TFDSM4","DBK238","T77169","TEVVHG","T19815","TAALX9","T11036","TEZKO6","T76547","TEZFJU","T51580","T09032","T11933","T33436","T02800","T41773","T17941","TFDUKJ","T59698","T06697","TFBTU8","TEVVV2","TEZKQ5","T43410","TEZOB3","TFDITK","T31871","T09290","TEZIBV","TFBZVQ","115378","T10153","T22498","T23708","T52253","TAAFT3","T35094","T80848","TFCTB6","TFCGGY","T50732","TFCGRH","TFCGRD","T29213","T30612","TFCGRA","TFCGRG","T29296","TFBZDY","TFCNFT","T17401","TFCLQQ","T20359","T41463","TEZOQY","TFBRNV","TFCOVD","TEYJA5","T50585","TEYJ66","TEWTOM","TFCLEQ","TFCLER","T60366","T60370","TFBRNZ","TFBRNW","TEZFDT","TEYJ67","TEZGTZ","TFBRNU","T60365","T46391","T42222","TEZJIJ","TEZMXD","T58517","T50468","TEXPLS","TFCLES","TEZI68","TEVVTL","T42330","TFBRO1","T60372","TFCHYW","TEZFDU","TEXPND","TFBRO0","TFBTO7","TFCBVX","TEZH31","T41316","T29964","T39818","99061","T18851","T75069","T74511","TFDOQE","T10405","Temporários","TFCKYG","T06645","TFCRKT","TDCC0G","TFCUA3","TFDESF","TFAVF9","T03152","TFBNG2","TEVVV2","T59789","T17401","TFCLQQ.T20359","115378","TFECYR","T29964","T39818","99061","T18851","99034"
-];
 
 app.get('/', (req, res) => {
   res.send(`
@@ -144,8 +140,12 @@ app.get('/', (req, res) => {
       <div class="container">
         <h1>TOTVS Fluig Suporte<br>Priorização de Tickets</h1>
         <form method="POST" action="/send">
-          <label for="tcode">Código T</label>
-          <input type="text" id="tcode" name="tcode" placeholder="Ex: T12345" required>
+          <label for="suporte">Tipo de Suporte</label>
+          <select id="suporte" name="suporte" required style="width:100%;margin-bottom:16px;padding:10px;border-radius:6px;border:1px solid #444;background:#181c2a;color:#fff;font-size:1rem;">
+            <option value="Padrão" selected>Padrão</option>
+            <option value="Prime">Prime</option>
+          </select>
+          <!-- Código T removido -->
           <label for="ticket">Ticket</label>
           <input type="text" id="ticket" name="ticket" placeholder="Ex: 123456" required>
           <label for="email">E-mail</label>
@@ -239,16 +239,15 @@ app.get('/', (req, res) => {
 
 // Dispara mensagem para o Google Chat
 app.post('/send', async (req, res) => {
-  const { tcode, ticket, mensagem, email, telefone } = req.body;
-  if (!tcode || !ticket || !mensagem || !email) {
+  const { suporte, ticket, mensagem, email, telefone } = req.body;
+  if (!suporte || !ticket || !mensagem || !email) {
     return res.redirect('/?status=Preencha+todos+os+campos+obrigatórios.');
   }
   // Validação simples de email
   if (!email.trim().toLowerCase().endsWith('@totvs.com.br')) {
     return res.redirect('/?status=E-mail+não+autorizado,+fale+com+o+administrador.');
   }
-  const grupo = TCODE_PRIME.some(tc => tcode.trim().toUpperCase().includes(tc)) ? 'Suporte Prime' : 'Suporte Todos';
-  const webhook = WEBHOOKS[grupo];
+  const webhook = WEBHOOKS[suporte];
   const ticketUrl = `https://totvssuporte.zendesk.com/agent/tickets/${ticket}`;
   const card = {
     cards: [
