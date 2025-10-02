@@ -215,15 +215,19 @@ app.get('/', (req, res) => {
           const form = document.querySelector('form');
           form.addEventListener('submit', function(e) {
             const emailInput = document.getElementById('email');
-            const emailError = document.getElementById('emailError');
             if (!emailInput.value.trim().toLowerCase().endsWith('@totvs.com.br')) {
               e.preventDefault();
-              emailError.textContent = 'Você não tem autorização para solicitação de prioridade.';
-              emailError.style.display = 'block';
+              if (typeof toastr !== 'undefined') {
+                toastr.options = {
+                  positionClass: 'toast-top-right',
+                  timeOut: 3500,
+                  closeButton: true,
+                  progressBar: true
+                };
+                toastr.error('Você não tem autorização para solicitação de prioridade.');
+              }
               emailInput.focus();
               return false;
-            } else {
-              emailError.style.display = 'none';
             }
           });
         });
